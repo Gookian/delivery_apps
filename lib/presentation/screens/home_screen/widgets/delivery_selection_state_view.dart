@@ -78,6 +78,10 @@ class DeliverySelectionStateView extends StatelessWidget {
                       int hours = duration.inHours.remainder(Duration.hoursPerDay);
                       int minutes = duration.inMinutes.remainder(Duration.minutesPerHour);
                       var timeRoute = '${days != 0 ? '$days д. ' : ''}${hours != 0 ? '$hours час. ' : ''}${minutes != 0 ? '$minutes мин.' : ''}';
+
+                      final distance = delivery.tripInfo.routes[0].distance;
+                      final distanceFormat = distance < 1000 ? '$distance м' : '${distance ~/ 1000} км';
+
                       return SizedBox(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +107,7 @@ class DeliverySelectionStateView extends StatelessWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text("Дистанция:", style: Theme.of(context).textTheme.bodyLarge),
-                                      Text("${delivery.tripInfo.routes[0].distance ~/ 1000} км", style: Theme.of(context).textTheme.bodySmall)
+                                      Text(distanceFormat, style: Theme.of(context).textTheme.bodySmall)
                                     ],
                                   ),
                                   const SizedBox(width: 8),
@@ -205,6 +209,8 @@ class DeliverySelectionStateView extends StatelessWidget {
       int hours = duration.inHours.remainder(Duration.hoursPerDay);
       int minutes = duration.inMinutes.remainder(Duration.minutesPerHour);
       var timeRoute = '${days != 0 ? '$days д. ' : ''}${hours != 0 ? '$hours час. ' : ''}${minutes != 0 ? '$minutes мин.' : ''}';
+      final distance = state.selectedDelivery!.tripInfo.routes[0].distance;
+      final distanceFormat = distance < 1000 ? '$distance м' : '${distance ~/ 1000} км';
 
       return AnimatedScale(
         duration: const Duration(seconds: 1),
@@ -241,7 +247,7 @@ class DeliverySelectionStateView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text("Дистанция:", style: Theme.of(context).textTheme.bodyLarge),
-                            Text("${state.selectedDelivery!.tripInfo.routes[0].distance ~/ 1000} км", style: Theme.of(context).textTheme.bodySmall)
+                            Text(distanceFormat, style: Theme.of(context).textTheme.bodySmall)
                           ],
                         ),
                         const SizedBox(width: 8),

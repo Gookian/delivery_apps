@@ -20,7 +20,7 @@ class AuthenticationCubit extends Cubit<AuthenticationState> {
     try {
       emit(AuthenticationLoadingState());
       var result = await client.authentication(username, password);
-      TokenRepository.token = result;
+      TokenRepository.token = result.replaceAll("\"", "");
       emit(AuthenticationIdleState());
     } catch (obj) {
       switch (obj.runtimeType) {

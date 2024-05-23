@@ -1,5 +1,6 @@
 import 'package:delivery_apps/api/osrm/models/trip_information.dart';
 import 'package:delivery_apps/api/osrm/models/route.dart' as models;
+import 'package:delivery_apps/api/osrm/models/step.dart' as models;
 import 'package:flutter/material.dart';
 import 'package:flutter_map_animations/flutter_map_animations.dart';
 import 'package:latlong2/latlong.dart';
@@ -62,6 +63,13 @@ class TripRouteState extends HomeState {
   final int distance;
   final int duration;
   final DateTime time;
+  final models.Step currentStep;
+  final models.Step nextStep;
+  final int currentStepId;
+  final bool isAnimatedHelperDelivery;
+  final bool isArrivedForUnloading;
+  final bool isProcessOfUnloading;
+  final Duration? currentWaitingDuration;
 
   TripRouteState({
     required this.delivery,
@@ -69,7 +77,14 @@ class TripRouteState extends HomeState {
     required this.distance,
     required this.duration,
     required this.time,
+    required this.currentStep,
+    required this.nextStep,
+    required this.currentStepId,
     this.speed = 0,
+    this.isAnimatedHelperDelivery = false,
+    this.isArrivedForUnloading = false,
+    this.isProcessOfUnloading = false,
+    this.currentWaitingDuration,
   });
 
   TripRouteState copyWith({
@@ -77,6 +92,13 @@ class TripRouteState extends HomeState {
     int? distance,
     int? duration,
     DateTime? time,
+    models.Step? currentStep,
+    models.Step? nextStep,
+    int? currentStepId,
+    bool? isAnimatedHelperDelivery,
+    bool? isArrivedForUnloading,
+    bool? isProcessOfUnloading,
+    Duration? currentWaitingDuration,
   }) =>
       TripRouteState(
           delivery: delivery,
@@ -84,7 +106,14 @@ class TripRouteState extends HomeState {
           speed: speed ?? this.speed,
           distance: distance ?? this.distance,
           duration: duration ?? this.duration,
-          time: time ?? this.time
+          time: time ?? this.time,
+          currentStep: currentStep ?? this.currentStep,
+          nextStep: nextStep ?? this.nextStep,
+          currentStepId: currentStepId ?? this.currentStepId,
+          isAnimatedHelperDelivery : isAnimatedHelperDelivery ?? this.isAnimatedHelperDelivery,
+         isArrivedForUnloading: isArrivedForUnloading ?? this.isArrivedForUnloading,
+          isProcessOfUnloading: isProcessOfUnloading ?? this.isProcessOfUnloading,
+          currentWaitingDuration: currentWaitingDuration ?? currentWaitingDuration,
       );
 }
 
@@ -94,13 +123,29 @@ class ProceedToStartOfDeliveryState extends HomeState {
   final int distance;
   final int duration;
   final DateTime time;
+  final models.Step currentStep;
+  final models.Step nextStep;
+  final int currentStepId;
+  final Delivery selectedDelivery;
+  final bool isAnimatedHelperDelivery;
+  final bool isArrivedForLoading;
+  final bool isLoadingProcess;
+  final Duration? currentWaitingDuration;
 
   ProceedToStartOfDeliveryState({
     required this.route,
     required this.distance,
     required this.duration,
     required this.time,
+    required this.currentStep,
+    required this.nextStep,
+    required this.currentStepId,
+    required this.selectedDelivery,
     this.speed = 0,
+    this.isAnimatedHelperDelivery = false,
+    this.isArrivedForLoading = false,
+    this.isLoadingProcess = false,
+    this.currentWaitingDuration,
   });
 
   ProceedToStartOfDeliveryState copyWith({
@@ -109,13 +154,29 @@ class ProceedToStartOfDeliveryState extends HomeState {
     int? distance,
     int? duration,
     DateTime? time,
+    models.Step? currentStep,
+    models.Step? nextStep,
+    int? currentStepId,
+    bool? isAnimatedHelperDelivery,
+    bool? isArrivedForLoading,
+    bool? isLoadingProcess,
+    Duration? currentWaitingDuration,
+    Delivery? selectedDelivery
   }) =>
       ProceedToStartOfDeliveryState(
           route: route,
           speed: speed ?? this.speed,
           distance: distance ?? this.distance,
           duration: duration ?? this.duration,
-          time: time ?? this.time
+          time: time ?? this.time,
+          currentStep: currentStep ?? this.currentStep,
+          nextStep: nextStep ?? this.nextStep,
+          currentStepId: currentStepId ?? this.currentStepId,
+          isAnimatedHelperDelivery: isAnimatedHelperDelivery ?? this.isAnimatedHelperDelivery,
+          isArrivedForLoading: isArrivedForLoading ?? this.isArrivedForLoading,
+          isLoadingProcess: isLoadingProcess ?? this.isLoadingProcess,
+          currentWaitingDuration: currentWaitingDuration ?? currentWaitingDuration,
+          selectedDelivery: selectedDelivery ?? this.selectedDelivery,
       );
 }
 

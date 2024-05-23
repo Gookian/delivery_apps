@@ -96,6 +96,7 @@ class HomeScreen extends StatelessWidget {
                     MarkerClusterLayerWidget(
                       options: MarkerClusterLayerOptions(
                         size: const Size(50, 50),
+                        rotate: true,
                         maxClusterRadius: 50,
                         markers: _buildMarkers(state.dataMarkers),
                         onMarkerTap: (marker) {
@@ -184,13 +185,14 @@ class HomeScreen extends StatelessWidget {
                       CurrentLocationLayer(
                         alignPositionOnUpdate: AlignOnUpdate.always,
                         alignDirectionOnUpdate: AlignOnUpdate.always,
+                        headingStream: cubit.getHeadingStream(),
                         focalPoint: const FocalPoint(offset: Point<double>(0, 450.0)),
-                        style: const LocationMarkerStyle(
-                          marker: CustomLocationMarker(
+                        style: LocationMarkerStyle(
+                          marker: const CustomLocationMarker(
                             child: Icon(Icons.navigation, color: Colors.white, size: 5),
                           ),
-                          markerSize: Size(10, 10),
-                          headingSectorRadius: 140,
+                          markerSize: const Size(10, 10),
+                          headingSectorColor: Colors.blue.withOpacity(0.5),
                           markerDirection: MarkerDirection.heading,
                         ),
                       ),
@@ -231,13 +233,14 @@ class HomeScreen extends StatelessWidget {
                       CurrentLocationLayer(
                         alignPositionOnUpdate: AlignOnUpdate.always,
                         alignDirectionOnUpdate: AlignOnUpdate.always,
+                        headingStream: cubit.getHeadingStream(),
                         focalPoint: const FocalPoint(offset: Point<double>(0, 450.0)),
-                        style: const LocationMarkerStyle(
-                          marker: CustomLocationMarker(
+                        style: LocationMarkerStyle(
+                          marker: const CustomLocationMarker(
                             child: Icon(Icons.navigation, color: Colors.white, size: 5),
                           ),
-                          markerSize: Size(10, 10),
-                          headingSectorRadius: 140,
+                          markerSize: const Size(10, 10),
+                          headingSectorColor: Colors.blue.withOpacity(0.5),
                           markerDirection: MarkerDirection.heading,
                         ),
                       ),

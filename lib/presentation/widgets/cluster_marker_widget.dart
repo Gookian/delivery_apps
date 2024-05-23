@@ -12,7 +12,7 @@ class ClusterMarker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.blue[200],
+        color: Colors.blue[200]?.withOpacity(0.6),
         shape: BoxShape.circle,
         border: Border.all(
           color: Colors.blue,

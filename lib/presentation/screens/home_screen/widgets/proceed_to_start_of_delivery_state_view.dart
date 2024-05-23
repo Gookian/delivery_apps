@@ -1,6 +1,7 @@
 import 'package:delivery_apps/presentation/bloc/home_screen/home_cubit.dart';
 import 'package:delivery_apps/presentation/bloc/home_screen/home_state.dart';
 import 'package:delivery_apps/presentation/widgets/animated_floating_button.dart';
+import 'package:delivery_apps/presentation/widgets/animated_helper_delivery.dart';
 import 'package:delivery_apps/presentation/widgets/animated_text_in_circle.dart';
 import 'package:delivery_apps/presentation/widgets/animated_vertical_box.dart';
 import 'package:delivery_apps/presentation/widgets/custom_outlined_button_widget.dart';
@@ -9,8 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:theme_mode_handler/theme_picker_dialog.dart';
-
-import '../../../widgets/animated_helper_delivery.dart';
 
 class ProceedToStartOfDeliveryStateView extends StatelessWidget {
   final HomeCubit cubit;
@@ -22,6 +21,32 @@ class ProceedToStartOfDeliveryStateView extends StatelessWidget {
     required this.state
   });
 
+  Future<dynamic> _showStartDeliveryDialog(BuildContext context, HomeCubit cubit) {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Вы уверены, что весь груз загружен?"),
+            content: const Text("Если груз будет забыт, то вернуться к этому этапу будет невозможно, только с помощью общения с оператором через чат."),
+            actions: [
+              TextButton(
+                child: const Text("Отменить"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              TextButton(
+                child: const Text("Продолжить"),
+                onPressed: () {
+                  cubit.startDriving();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        }
+    );
+  }
 
   Future<dynamic> _showCancelDeliveryDialog(BuildContext context, HomeCubit cubit) {
     return showDialog(
@@ -68,6 +93,85 @@ class ProceedToStartOfDeliveryStateView extends StatelessWidget {
     return '${days != 0 ? '$days:' : ''}${hours != 0 ? '$hours:' : ''}${'$minutes'}';
   }
 
+  ManeuverType _getManeuverTypeByString(String? type) {
+    switch (type) {
+      case 'straight':
+        return ManeuverType.directly;
+      case 'left':
+        return ManeuverType.left;
+      case 'right':
+        return ManeuverType.right;
+      case 'slight left':
+        return ManeuverType.smoothlyLeft;
+      case 'slight right':
+        return ManeuverType.smoothlyRight;
+      default:
+        return ManeuverType.directly;
+    }
+  }
+
+  Widget _buildBottomBar(ProceedToStartOfDeliveryState state, BuildContext context, HomeCubit cubit) {
+    if (state.isArrivedForLoading) {
+      if (state.isLoadingProcess) {
+        final duration = state.currentWaitingDuration;
+        int hours = duration?.inHours ?? 0;
+        int minutes = duration?.inMinutes.remainder(Duration.minutesPerHour) ?? 0;
+        int seconds = duration?.inSeconds.remainder(Duration.secondsPerMinute) ?? 0;
+        final timeString = '${hours > 0 ? '$hours ч ' : ''}${minutes > 0 ? '$minutes м ' : ''}$seconds с';
+        return AnimatedVerticalBox(
+            isStartAnimated: true,
+            children: [
+              TextWithHint(text: timeString, hint: 'время ожидания'),
+              const SizedBox(width: 16),
+              Expanded(
+                child: CustomOutlinedButtonWidget(
+                    onPressed: () {
+                      _showStartDeliveryDialog(context, cubit);
+                    },
+                    child: const Text("Груз загружен")
+                ),
+              )
+            ]
+        );
+      } else {
+        return AnimatedScale(
+            duration: const Duration(seconds: 1),
+            curve: Curves.bounceIn,
+            scale: 1,
+            child: Container(
+                margin: const EdgeInsets.all(20),
+                child: Material(
+                    elevation: 20,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                        padding: const EdgeInsets.all(20.0),
+                        child: CustomOutlinedButtonWidget(
+                            onPressed: () {
+                              cubit.clickArrivedForLoading();
+                            },
+                            child: const Text("Прибыл в пункт погрузки")
+                        )
+                    )
+                )
+            )
+        );
+      }
+    } else {
+      return AnimatedVerticalBox(
+          isStartAnimated: true,
+          children: [
+            state.duration < 3540 ?
+            TextWithHint(text: (state.duration / 60).toStringAsFixed(0), hint: 'м') :
+            TextWithHint(text: _getStringTimeBySeconds(state.duration), hint: 'ч'),
+            TextWithHint(text: _getTimeTextByDateTime(state), hint: 'прибытие'),
+            state.distance < 1000 ?
+            TextWithHint(text: '${state.distance}', hint: 'м') :
+            TextWithHint(text: _getFormattedDistanceInKilometers(state), hint: 'км')
+          ]
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -75,11 +179,16 @@ class ProceedToStartOfDeliveryStateView extends StatelessWidget {
         Container(
             alignment: Alignment.topLeft,
             padding: const EdgeInsets.all(20),
-            child: const AnimatedHelperDelivery(
-                isStartAnimated: true,
-                distance: 2500,
-                street: "пер. Дербышевского",
-                maneuver: ManeuverType.reversal
+            child: GestureDetector(
+              child: AnimatedHelperDelivery(
+                  isStartAnimated: state.isAnimatedHelperDelivery,
+                  distance: state.currentStep.distance.toInt(),
+                  street: state.currentStep.name,
+                  maneuver: _getManeuverTypeByString(state.nextStep.maneuver.modifier)
+              ),
+              onTap: () {
+                cubit.testHintRouteStep();
+              },
             )
         ),
         Container(
@@ -171,60 +280,7 @@ class ProceedToStartOfDeliveryStateView extends StatelessWidget {
                   ),
                 ],
               ),
-              /*AnimatedScale(
-                  duration: const Duration(seconds: 1),
-                  curve: Curves.bounceIn,
-                  scale: 1,
-                  child: Container(
-                      margin: const EdgeInsets.all(20),
-                      child: Material(
-                          elevation: 20,
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                              padding: const EdgeInsets.all(20.0),
-                              child: CustomOutlinedButtonWidget(onPressed: () {}, child: Text("Прибыл в пункт погрузки"))
-                          )
-                      )
-                  )
-              )*/
-
-              // AnimatedVerticalBox(
-              //     isStartAnimated: true,
-              //     children: [
-              //       TextWithHint(text: '3:44', hint: 'время ожидания'),
-              //       SizedBox(width: 16),
-              //       Expanded(
-              //         child: CustomOutlinedButtonWidget(onPressed: () {}, child: Text("Посмотреть товар")),
-              //       )
-              //     ]
-              // )
-              /*AnimatedVerticalBox(
-                  isStartAnimated: true,
-                  children: [
-                    TextWithHint(text: '3 часа 44 минуты', hint: 'затрачено времени'),
-                    TextWithHint(text: '365 км', hint: 'пройдено'),
-                  ]
-              ),
-              AnimatedVerticalBox(
-                  isStartAnimated: true,
-                  children: [
-                    Expanded(
-                      child: CustomOutlinedButtonWidget(onPressed: () {}, child: Text("Груз доставлен")),
-                    )
-                  ]
-              )*/
-              AnimatedVerticalBox(
-                  isStartAnimated: true,
-                  children: [
-                    state.duration < 3540 ?
-                    TextWithHint(text: (state.duration / 60).toStringAsFixed(0), hint: 'м') :
-                    TextWithHint(text: _getStringTimeBySeconds(state.duration), hint: 'ч'),
-                    TextWithHint(text: _getTimeTextByDateTime(state), hint: 'прибытие'),
-                    state.distance < 1000 ?
-                    TextWithHint(text: '${state.distance}', hint: 'м') :
-                    TextWithHint(text: _getFormattedDistanceInKilometers(state), hint: 'км')
-                  ]
-              )
+              _buildBottomBar(state, context, cubit)
             ],
           ),
         ),
